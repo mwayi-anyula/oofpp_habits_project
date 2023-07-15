@@ -14,6 +14,7 @@ class Statistics:
         total_days = 0
         completed_habits = 0
         habit_frequencies = {}
+        habit_items = []
 
         for habit in habits:
             status = habit["status"]
@@ -21,12 +22,23 @@ class Statistics:
             total_completions += sum(status.values())
             total_days += self.calculate_total_days(habit)
             completed_habits += any(status.values())
+            time_unit = self.get_streak_with_id(habits,habit['id']).split(" ")
+            
+            habit_item = {
+                "Name":habit["name"],
+                "Streak":self.get_streak_with_id(habits,habit["id"]),
+                "Completions": f"{sum(status.values())} / {self.calculate_total_days(habit)} {time_unit[1]}",
+                "Frequency":habit["frequency"].capitalize(),
+            }
+            habit_items.append(habit_item)
+
 
             if frequency in habit_frequencies:
                 habit_frequencies[frequency] += 1
             else:
                 habit_frequencies[frequency] = 1
 
+        self.habits_streaks = habit_items
         self.total_completions = total_completions
         self.average_rate = round(total_completions / total_days, 2)
         self.average_frequency = habit_frequencies
@@ -125,7 +137,18 @@ class Statistics:
                             break
 
         return current_streak
+    
+    def get_frequency(self, frequency):
+        """Get the frequency of a habit."""
+        if frequency == "daily":
+            frequency_unit = "day(s)"
+        elif frequency == "weekly":
+            frequency_unit = "week(s)"
+        elif frequency == "monthly":
+            frequency_unit = "month(s)"
 
+        return frequency_unit
+    
     def calculate_single(self, habits, value_id):
         """
         Calculate statistics for a single habit using a value ID.
@@ -155,28 +178,30 @@ class Statistics:
             "total_days": total_days,
             "completion_rate": completion_rate,
             "longest_streak": longest_streak,
-            "current_streak": current_streak
+            "current_streak": current_streak,
+            "frequency": habit_data["frequency"]
         }
 
     def show_total(self):
         """Show the total number of habits and completions."""
-        print(f"You have {self.total_habits} habits and {self.total_completions} completions.")
-        print("")
+        streaks_arr = self.habits_streaks
+        info = f"You have {self.total_habits} habits and {self.total_completions} completions."
+        return (f"{info}|{streaks_arr}")
 
     def show_average(self):
         """Show the average completion rate and frequency of habits."""
         print(f"Your average completion rate is {self.average_rate}.")
-        print("Your average frequency of habits is:")
+        print("\nYour current frequency of habits are:")
         for frequency, count in self.average_frequency.items():
             print(f"- Frequency {frequency}: {count} habits")
         print("")
 
     def show_streak(self):
         """Show the longest and current streaks of habit completions."""
-        print(f"Your longest streak of habit completions is {self.longest_streak} days.")
+        #print(f"Your longest streak of habit completions is {self.longest_streak} days.")
         print(f"Your current streak of habit completions is {self.current_streak} days.")
         print("")
-        
+
     def show_single(self, habits, value_id, name):
         """
         Show the statistics for a single habit using a value ID.
@@ -191,22 +216,27 @@ class Statistics:
         if habit_stats is None:
             print(f"No habit found with name \"{name}\".")
         else:
-            print("")
-            print(f"Statistics for habit \"{name}\" (Value ID {value_id}):")
-            print(f"Total completions: {habit_stats['total_completions']}")
-            print(f"Total days: {habit_stats['total_days']}")
-
-            frequency = habits[0]["frequency"]  # Assuming all habits have the same frequency
+            frequency = habit_stats['frequency']
+            frequency_unit = self.get_frequency(frequency)
             if frequency == "daily":
-                print(f"Completion rate: {habit_stats['completion_rate']} per day")
+                completion_rate = f"{habit_stats['completion_rate']} per day"
             elif frequency == "weekly":
-                print(f"Completion rate: {habit_stats['completion_rate']} per week")
+                completion_rate = f"{habit_stats['completion_rate']} per week"
             elif frequency == "monthly":
-                print(f"Completion rate: {habit_stats['completion_rate']} per month")
+                completion_rate = f"{habit_stats['completion_rate']} per month"
 
-            print(f"Longest streak: {habit_stats['longest_streak']} days")
-            print(f"Current streak: {habit_stats['current_streak']} days")
-            print("")
+            single_arr = [
+                #["Id", value_id],
+                ["Name", name],
+                ["", ""],
+                ["Total completions", f"{habit_stats['total_completions']} {frequency_unit}"],
+                [f"Total {frequency_unit}", f"{habit_stats['total_days']} {frequency_unit}"],
+                ["Completion rate", completion_rate],
+                ["Longest streak",  f"{habit_stats['longest_streak']} {frequency_unit}"],
+                ["Current streak",  f"{habit_stats['current_streak']} {frequency_unit}"],
+                ["Frequency",  frequency.capitalize()],
+            ]
+            return single_arr
 
     def get_streak_with_id(self, habits, value_id):
         """
@@ -217,7 +247,7 @@ class Statistics:
             value_id (float): The value ID of the habit.
 
         Returns:
-            int or None: The streak of habit completions with the correct frequency for the specified habit, or None if no habit is found with the given value ID.
+            str or None: The streak of habit completions with the correct frequency for the specified habit, or None if no habit is found with the given value ID.
         """
         habit_data = next((habit for habit in habits if habit["id"] == float(value_id)), None)
 

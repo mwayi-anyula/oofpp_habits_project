@@ -5,7 +5,9 @@ from analytics import Statistics
 from habit import Habit
 from tabulate import tabulate
 from database import Database
+import json
 
+"""Reusable vsriables"""
 back = "<< Back"
 menu = "Main menu"
 go_back = [{"value":back, "name": back},{"value":menu, "name": menu},]
@@ -16,7 +18,15 @@ one_month_from_now = (today + relativedelta(months=1)).strftime(timeformat)
 table_header = ["Id", "Name", "Description", "Frequency", "Longest Streak" , "Start Date", "End Date"]
 
 def tablify(data, table_header):
-    tabulated = tabulate(data, headers=table_header, tablefmt='psql', showindex=False)
+    if table_header == "no_header":
+        tabulated = tabulate(data, tablefmt='psql', showindex=False)
+    elif table_header == "no_header_right":
+        tabulated = tabulate(data, tablefmt='psql', colalign=("right",), showindex=False)
+    elif table_header == "header_keys":
+        tabulated = tabulate(data, headers="keys", tablefmt='psql', showindex=False)
+    else:
+        tabulated = tabulate(data, headers=table_header, tablefmt='psql', showindex=False)
+    
     print(f"\n{tabulated}\n")
 
 class CLI:
@@ -38,13 +48,8 @@ class CLI:
                 {"name": "Create, update, delete a habit","value":"modify"},
                 {"name": "Check/Complete a task","value":"log"},
                 {"name": "View statistics","value":"stats"},
-                "list",
-                "update",
-                "delete",
-                "complete",
-                "stats_old",
-                "help",
-                "exit"
+                {"name": "Need some help?","value":"help"},
+                {"name": "Exit","value":"exit"},
             ]).ask()  # get the user input
 
             if command == "create":
@@ -95,16 +100,6 @@ class CLI:
                 elif command_log == back:
                     self.run()
             elif command == "stats":
-                self.show_stats()
-            elif command == "list":
-                self.list_habits()
-            elif command == "update":
-                self.update_habit()
-            elif command == "delete":
-                self.delete_habit()
-            elif command == "complete":
-                self.complete_habit()
-            elif command == "stats_old":
                 self.show_stats()
             elif command == "help":
                 self.show_help()
@@ -431,10 +426,22 @@ class CLI:
 
         if habits:
             habit_choices = [{ "name": habit["name"], "value": str(habit["id"])} for habit in habits]
-            habit_choices.append({"name":"<< Back", "value": "<< Back"})
+            habit_choices.append({"name":back, "value": back})
             return questionary.select("Please select a habit:", choices=habit_choices).ask()
         else:
             raise ValueError("No habit in the database. Add a habit first to use this function.")
+    
+    def show_total_stats(self, stats, long):
+        total_streaks = stats.show_total().split("|")
+        total_streaks_arr = total_streaks[1].replace("'", "\"")
+        total_streaks_arr2= json.loads(total_streaks_arr)
+        total_streaks_arr2.sort(key=lambda x: x["Streak"], reverse=True)
+        if long == 1:
+            print("Your longest streak of habit completions is", total_streaks_arr2[0]["Streak"])
+            tablify([total_streaks_arr2[0]], "header_keys")
+        else:
+            print("\n",total_streaks[0])
+            tablify(total_streaks_arr2, "header_keys")
 
     def show_stats(self):
         """Show various statistics based on your habit data."""
@@ -442,9 +449,10 @@ class CLI:
         stats = Statistics()
         stats.calculate(habits)
 
+
         options = [
             {"value":"all","name":"Show all statistics"},
-            {"value":"single_stat","name":"Show total, average, streak"},
+            {"value":"single_stat","name":"Show only total/average/streak"},
             {"value":"single_habit","name":"Show single habit statistics"},
             {"value":back, "name": back},
         ]
@@ -453,7 +461,7 @@ class CLI:
 
         if choice == "all":
             # Show all statistics
-            stats.show_total()
+            self.show_total_stats(stats, 0)
             stats.show_average()
             stats.show_streak()
             back_choice = questionary.select("Would like to go back?", choices=go_back).ask()
@@ -470,8 +478,7 @@ class CLI:
             choice_stats = questionary.select("What statistics would you like to see?", choices=single_stats).ask()
             # Show total, average, streak
             if choice_stats == "total":
-                print("")
-                stats.show_total()
+                self.show_total_stats(stats,0)
                 self.show_stats()
             elif choice_stats == "average":
                 print("")
@@ -479,6 +486,7 @@ class CLI:
                 self.show_stats()
             elif choice_stats == "streak":
                 print("")
+                self.show_total_stats(stats, 1)
                 stats.show_streak()
                 self.show_stats()
             elif choice_stats == back:
@@ -493,13 +501,15 @@ class CLI:
                 selected_habit_id = selected_habit.split(":")[0].strip()  # Extract the ID from the selected habit
                 selected_habit_name = selected_habit.split(":")[1]  # Extract the name from the selected habit
                 # Show single habit statistics
-                stats.show_single(habits, selected_habit_id, selected_habit_name)
+                single_data = stats.show_single(habits, selected_habit_id, selected_habit_name)
+                tablify(single_data,"no_header_right")
             else:
                 self.show_stats()      
 
 
     def show_help(self):
         """Show detailed information about each command and its usage."""
+        print("")
         print("Here is detailed information about each command and its usage:")
         print("- create: Create a new habit")
         print("  Usage: create")
@@ -517,6 +527,7 @@ class CLI:
         print("  Usage: help")
 
         print("- exit: Exit the app")
+        print("")
     def date_to_timestamp(self, date_string):
         try:
             # Convert string to datetime object
