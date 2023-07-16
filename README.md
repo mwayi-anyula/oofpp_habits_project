@@ -2,11 +2,15 @@
 
 The Habit Tracking App is a command-line application that allows you to track your habits, maintain streaks, and view statistics. It helps you stay accountable and motivated towards your daily habits.
 
-## Prerequisites
+## Features
 
-Before running the Habit Tracking App, make sure you have the following prerequisites installed:
-
-- Python 3.x: The app is built using Python, so you need to have Python 3.x installed on your system. You can download Python from the official website: [python.org](https://www.python.org/downloads/)
+- **Habit Creation**: Easily create new habits by providing a name, description, frequency (daily, weekly, or monthly), and start/end dates.
+- **Habit Modification**: Update existing habits by changing their name, description, frequency, or date range.
+- **Habit Deletion**: Delete unwanted habits from the database.
+- **Habit Completion**: Mark habits as completed for a specific date, maintaining streaks and tracking progress.
+- **Viewing Habits**: Display or view a single habit or list all habits stored in the database.
+- **Statistics**: View detailed statistics about your habits, including total habits, average completion rate, and longest streaks.
+- **Flexible Tracking**: Choose from daily, weekly, or monthly frequency options for each habit, allowing customization based on your habit requirements.
 
 ## Installation
 
@@ -28,15 +32,36 @@ Before running the Habit Tracking App, make sure you have the following prerequi
    pip install -r requirements.txt
    ```
 
+4. Run the application:
+
+   ```bash
+   python app.py
+   ```
+
 ## Usage
 
-Once the application is installed, you can run it by executing the following command in the project directory:
+Once the application is running, follow the menu prompts to perform different actions:
+
+- **View Habits**: Choose the option to show a single habit or list all habits, and view the details of each habit, including its name, description, frequency, start date, end date, and streak statistics.
+- **Create a Habit**: Choose the option to create a new habit, and provide the required information such as name, description, frequency, and date range.
+- **Update a Habit**: Select the option to update an existing habit, choose the habit you want to update, and modify the necessary fields.
+- **Delete a Habit**: Choose the option to delete a habit, select the habit you want to delete from the list, and confirm the deletion.
+- **Mark a Habit as Completed**: Select the option to check/complete a habit, choose the habit you want to mark as completed, and enter the date for which you completed the habit.
+- **View Statistics**: Choose the option to view statistics and select the desired statistics to display, such as total habits, average completion rate, or longest streaks.
+- **Get Help**: If you need assistance or want to know more about each command and its usage, select the option for help. The app will provide instructions and explanations for using the different features.
+- **Exit the App**: When you are finished using the Habit Tracking App, select the exit option to close the application.
 
 ```bash
-python app.py
-```
+Welcome to the habit tracking app!
 
-Follow the menu prompts to perform different actions such as creating, updating, or deleting a habit, marking a habit as completed, and viewing statistics.
+? What do you want to do? (Use arrow keys)
+ » Show a habit/ list all habits
+   Create, update, delete a habit
+   Check/Complete a task
+   View statistics
+   Need some help?
+   Exit
+```
 
 ## Testing
 
