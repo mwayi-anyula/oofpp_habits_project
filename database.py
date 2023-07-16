@@ -1,5 +1,11 @@
 import sqlite3
+import random
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 import json
+
+today = datetime.now()
+timeformat = "%Y-%m-%d"
 
 class Database:
     """A class to handle the connection and interaction with the SQLite database."""
@@ -156,6 +162,73 @@ class Database:
             return latest_id
         else:
             return None
+        
+    def clear_habit_status(self, habit_id):
+        """Clear the logged data in the status column of a habit."""
+        sql = "UPDATE habits SET status = '{}' WHERE id = ?"
+        self.cursor.execute(sql, (habit_id,))
+        self.conn.commit()
+        
+    def generate_predefined_habits(self):
+        """Generate predefined habits and store them in the database."""
+        self.connect()
+        self.create_table()
+
+        predefined_habits = [
+            {
+                'id': 1,
+                'name': 'Exercise',
+                'description': 'Daily workout routine',
+                'frequency': 'daily'
+            },
+            {
+                'id': 2,
+                'name': 'Read',
+                'description': 'Read a book for at least 30 minutes',
+                'frequency': 'weekly'
+            },
+            {
+                'id': 3,
+                'name': 'Meditation',
+                'description': 'Practice meditation for 10 minutes',
+                'frequency': 'daily'
+            },
+            {
+                'id': 4,
+                'name': 'Drink Water',
+                'description': 'Drink at least 8 glasses of water',
+                'frequency': 'weekly'
+            },
+            {
+                'id': 5,
+                'name': 'Learn a Language',
+                'description': 'Spend 30 minutes learning a new language',
+                'frequency': 'daily'
+            }
+        ]
+
+        for habit in predefined_habits:
+            start_date = (today - timedelta(weeks=4)).strftime(timeformat)
+            end_date = today.strftime(timeformat)
+            habit['start_date'] = start_date
+            habit['end_date'] = end_date
+            habit['status'] = self.generate_logged_status(start_date, end_date, habit['frequency'])
+            self.insert_habit(habit)
+
+    def generate_logged_status(self,start_date, end_date, frequency):
+        start_datetime = datetime.strptime(start_date, timeformat)
+        end_datetime = datetime.strptime(end_date, timeformat)
+        days = (end_datetime - start_datetime).days + 1
+
+        if frequency == 'daily':
+            return {str((start_datetime + timedelta(days=i)).date()): random.choice([True, False]) for i in range(days)}
+        elif frequency == 'weekly':
+            return {str((start_datetime + timedelta(weeks=i)).date()): random.choice([True, False]) for i in range(days // 7)}
+        elif frequency == 'monthly':
+            return {str((start_datetime + relativedelta(months=i)).date()): random.choice([True, False]) for i in range(days // 30)}
+        else:
+            return {}
+
 
     def close(self):
         """Close the connection and cursor."""

@@ -16,6 +16,7 @@ timeformat = "%Y-%m-%d"
 today = datetime.now()
 one_month_from_now = (today + relativedelta(months=1)).strftime(timeformat)
 table_header = ["Id", "Name", "Description", "Frequency", "Longest Streak" , "Start Date", "End Date"]
+habits_not_found = "\n🚫 No habit(s) found in the database.\n"
 
 def tablify(data, table_header):
     if table_header == "no_header":
@@ -59,6 +60,7 @@ class CLI:
                     {"value":"single", "name": "Show single habit"},
                     {"value":"list", "name": "List all habits"},
                     {"value":"list_frequency", "name": "List habits by frequency"},
+                    {"value":"mock_database", "name": "Load predefine data"},
                     {"value":back, "name": back},
                     ]).ask() 
                 if command_show == "single":
@@ -66,7 +68,15 @@ class CLI:
                 elif command_show == "list":
                     self.list_habits() 
                 elif command_show == "list_frequency":
-                    self.filter_by_frequency()             
+                    self.filter_by_frequency()
+                elif command_show == "mock_database":
+                    try:
+                        self.db.generate_predefined_habits()
+                    except:
+                        print("\nDatabase seems not to be empty. Clear the database and try again\n")
+                    else:
+                        print("\nPredefined/ mock data has sucessfully been add to the database")
+                        self.list_habits()      
                 elif command_show == back:
                     self.run()
             elif command == "modify":
@@ -85,18 +95,15 @@ class CLI:
                 elif command_modify == back:
                     self.run()
             elif command == "log":
-                command_log = questionary.select("Create, update, delete a habit:", choices=[
+                command_log = questionary.select("Check/ Complete habit:", choices=[
                     {"value":"check_in", "name": "Check habit as done"},
-                    {"value":"clear_log", "name": "Clear check in data"},
-                    {"value":"complete", "name": "Mark habit as completed"},
+                    {"value":"clear_log", "name": "Clear check-in / log data"},
                     {"value":back, "name": back},
                     ]).ask() 
                 if command_log == "check_in":
                     self.check_habit()
                 elif command_log == "clear_log":
                     self.clear_habit_status()
-                elif command_log == "complete":
-                    self.complete_habit()
                 elif command_log == back:
                     self.run()
             elif command == "stats":
@@ -111,7 +118,7 @@ class CLI:
 
     def welcome(self):
         """Display a welcome message and a list of available commands."""
-        print("Welcome to the habit tracking app!")
+        print("\n\nWelcome to the habit tracking app!\n")
 
     def create_habit(self):
         """Create a new habit with the given arguments."""
@@ -152,8 +159,11 @@ class CLI:
 
     def list_habits(self):
         """List all habits stored in the database."""
-        habits = self.db.fetch_all_habits()
-        self.tabulate_list(habits)
+        try:
+            habits = self.db.fetch_all_habits()
+            self.tabulate_list(habits)
+        except:
+            print(habits_not_found)       
     
     def show_habit(self,id):
         """Show single habit stored in the database."""
@@ -176,14 +186,17 @@ class CLI:
                     data.append(habit_data)
             tablify(data, table_header)
         else:
-            print("\n🚫 No habits found in the database.\n")
+            print(habits_not_found)
 
     def show_menu_habit(self):
         """Delete an existing habit with the given ID."""
-        habit_selected = self.habits_from_db()
-        if habit_selected != back:
-            self.show_habit(int(habit_selected))
-            self.show_menu_habit() # Returns to previous menu         
+        try:
+            habit_selected = self.habits_from_db()
+            if habit_selected != back:
+                self.show_habit(int(habit_selected))
+                self.show_menu_habit() # Returns to previous menu
+        except: 
+            print(habits_not_found)        
 
     def update_habit(self):
         """Update an existing habit with the given arguments."""
@@ -286,6 +299,16 @@ class CLI:
         else:
             print(f"No habit found with ID {habit_id}.")
 
+    def clear_habit_status(self):
+        """Clear the logged data in the status column of a habit."""
+        habit_selected = self.habits_from_db()
+        if habit_selected == back:
+            return
+        else:
+            habit_id = habit_selected
+            self.db.clear_habit_status(habit_id)
+            print(f"\n✔ Logged data for habit with ID {habit_id} has been cleared.\n")
+
     def filter_by_frequency(self):
         """Display the habit names available in the database for the user to choose from."""
         frequency_choice = questionary.select(
@@ -296,9 +319,12 @@ class CLI:
         if frequency_choice == back:
             return back
 
-        habits = self.db.fetch_habits_by_frequency(frequency_choice)
-        self.tabulate_list(habits)
-        self.filter_by_frequency()  
+        try:
+            habits = self.db.fetch_habits_by_frequency(frequency_choice)
+            self.tabulate_list(habits)
+            self.filter_by_frequency()
+        except:
+            print(f"\n🚫 Habits with the frequency \"{frequency_choice}\" are not currently being tracked\n")
 
     def tabulate_list(self,habits):
         """Reusable function to tabulate default list of habits"""
@@ -422,15 +448,18 @@ class CLI:
 
     def habits_from_db(self):
         """Display the habit names available in the database for the user to choose from."""
-        habits = self.db.fetch_all_habits()
+        try:        
+            habits = self.db.fetch_all_habits()
 
-        if habits:
-            habit_choices = [{ "name": habit["name"], "value": str(habit["id"])} for habit in habits]
-            habit_choices.append({"name":back, "value": back})
-            return questionary.select("Please select a habit:", choices=habit_choices).ask()
-        else:
-            raise ValueError("No habit in the database. Add a habit first to use this function.")
-    
+            if habits:
+                habit_choices = [{ "name": habit["name"], "value": str(habit["id"])} for habit in habits]
+                habit_choices.append({"name":back, "value": back})
+                return questionary.select("Please select a habit:", choices=habit_choices).ask()
+            else:
+                raise ValueError("No habit in the database. Add a habit first to use this function.")
+        except:
+            print(habits_not_found)
+
     def show_total_stats(self, stats, long):
         total_streaks = stats.show_total().split("|")
         total_streaks_arr = total_streaks[1].replace("'", "\"")
