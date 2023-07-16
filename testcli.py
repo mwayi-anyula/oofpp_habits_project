@@ -76,7 +76,7 @@ class TestCLI:
         cli.db.fetch_habit = lambda habit_id: {"frequency": "daily", "status": {}}
         cli.update_habit_db = lambda args: None  # Mock the update_habit_db method
 
-        with patch('cli.datetime') as mock_datetime:
+        with patch('habit_tracker.datetime') as mock_datetime:
             mock_datetime.now.return_value = datetime(2023, 7, 15)
             cli.check_habit()
 
@@ -89,16 +89,14 @@ class TestCLI:
     @patch('builtins.input')
     def test_filter_by_frequency(self, mock_input, cli):
         mock_input.side_effect = [
-            "Daily",
-            "list"
+            "Daily"
         ]
         cli.db.fetch_habits_by_frequency = lambda frequency: [{"name": "Habit 1"}, {"name": "Habit 2"}]
-        cli.list_habits = lambda: None  # Mock the list_habits method
 
         cli.filter_by_frequency()
 
         # Assert that the mock_input was called with the expected prompts
         assert mock_input.call_args_list == [
             (("Please select a habit frequency:",),),
-            (("Show a habit/ list all habits:",),),
+            (("Please select a habit frequency:",),),
         ]

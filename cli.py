@@ -7,16 +7,18 @@ from tabulate import tabulate
 from database import Database
 import json
 
-"""Reusable vsriables"""
+# Reusable variables and constants
+
 back = "<< Back"
 menu = "Main menu"
-go_back = [{"value":back, "name": back},{"value":menu, "name": menu},]
+go_back = [{"value": back, "name": back}, {"value": menu, "name": menu}]
 dateformat = "%d.%m.%Y"
 timeformat = "%Y-%m-%d"
 today = datetime.now()
 one_month_from_now = (today + relativedelta(months=1)).strftime(timeformat)
-table_header = ["Id", "Name", "Description", "Frequency", "Longest Streak" , "Start Date", "End Date"]
+table_header = ["Id", "Name", "Description", "Frequency", "Longest Streak", "Start Date", "End Date"]
 habits_not_found = "\n🚫 No habit(s) found in the database.\n"
+
 
 def tablify(data, table_header):
     if table_header == "no_header":
@@ -27,8 +29,9 @@ def tablify(data, table_header):
         tabulated = tabulate(data, headers="keys", tablefmt='psql', showindex=False)
     else:
         tabulated = tabulate(data, headers=table_header, tablefmt='psql', showindex=False)
-    
+
     print(f"\n{tabulated}\n")
+
 
 class CLI:
     """A class to implement the command-line interface for the app."""
@@ -45,28 +48,28 @@ class CLI:
 
         while True:  # loop until the user exits
             command = questionary.select("What do you want to do?", choices=[
-                {"name": "Show a habit/ list all habits","value":"show"},
-                {"name": "Create, update, delete a habit","value":"modify"},
-                {"name": "Check/Complete a task","value":"log"},
-                {"name": "View statistics","value":"stats"},
-                {"name": "Need some help?","value":"help"},
-                {"name": "Exit","value":"exit"},
+                {"name": "Show a habit/ list all habits", "value": "show"},
+                {"name": "Create, update, delete a habit", "value": "modify"},
+                {"name": "Check/Complete a task", "value": "log"},
+                {"name": "View statistics", "value": "stats"},
+                {"name": "Need some help?", "value": "help"},
+                {"name": "Exit", "value": "exit"},
             ]).ask()  # get the user input
 
             if command == "create":
                 self.create_habit()
             elif command == "show":
                 command_show = questionary.select("Show a habit/ list all habits:", choices=[
-                    {"value":"single", "name": "Show single habit"},
-                    {"value":"list", "name": "List all habits"},
-                    {"value":"list_frequency", "name": "List habits by frequency"},
-                    {"value":"mock_database", "name": "Load predefine data"},
-                    {"value":back, "name": back},
-                    ]).ask() 
+                    {"value": "single", "name": "Show single habit"},
+                    {"value": "list", "name": "List all habits"},
+                    {"value": "list_frequency", "name": "List habits by frequency"},
+                    {"value": "mock_database", "name": "Load predefine data"},
+                    {"value": back, "name": back},
+                ]).ask()
                 if command_show == "single":
                     self.show_menu_habit()
                 elif command_show == "list":
-                    self.list_habits() 
+                    self.list_habits()
                 elif command_show == "list_frequency":
                     self.filter_by_frequency()
                 elif command_show == "mock_database":
@@ -75,17 +78,17 @@ class CLI:
                     except:
                         print("\nDatabase seems not to be empty. Clear the database and try again\n")
                     else:
-                        print("\nPredefined/ mock data has sucessfully been add to the database")
-                        self.list_habits()      
+                        print("\nPredefined/ mock data has successfully been added to the database")
+                        self.list_habits()
                 elif command_show == back:
                     self.run()
             elif command == "modify":
                 command_modify = questionary.select("Create, update, delete a habit:", choices=[
-                    {"value":"create", "name": "Create a new habit"},
-                    {"value":"update", "name": "Update/Edit an existing habit"},
-                    {"value":"delete", "name": "Delete an existing habit"},
-                    {"value":back, "name": back},
-                    ]).ask() 
+                    {"value": "create", "name": "Create a new habit"},
+                    {"value": "update", "name": "Update/Edit an existing habit"},
+                    {"value": "delete", "name": "Delete an existing habit"},
+                    {"value": back, "name": back},
+                ]).ask()
                 if command_modify == "create":
                     self.create_habit()
                 elif command_modify == "update":
@@ -96,10 +99,10 @@ class CLI:
                     self.run()
             elif command == "log":
                 command_log = questionary.select("Check/ Complete habit:", choices=[
-                    {"value":"check_in", "name": "Check habit as done"},
-                    {"value":"clear_log", "name": "Clear check-in / log data"},
-                    {"value":back, "name": back},
-                    ]).ask() 
+                    {"value": "check_in", "name": "Check habit as done"},
+                    {"value": "clear_log", "name": "Clear check-in / log data"},
+                    {"value": back, "name": back},
+                ]).ask()
                 if command_log == "check_in":
                     self.check_habit()
                 elif command_log == "clear_log":
@@ -155,7 +158,7 @@ class CLI:
         habit_dict = habit.create()
         self.db.insert_habit(habit_dict)
         print(f"\n✔ Successfully created a new habit: {name}")
-        self.show_habit(self.db.get_latest_entry_id())    
+        self.show_habit(self.db.get_latest_entry_id())
 
     def list_habits(self):
         """List all habits stored in the database."""
@@ -163,9 +166,9 @@ class CLI:
             habits = self.db.fetch_all_habits()
             self.tabulate_list(habits)
         except:
-            print(habits_not_found)       
-    
-    def show_habit(self,id):
+            print(habits_not_found)
+
+    def show_habit(self, id):
         """Show single habit stored in the database."""
         habits = self.db.fetch_all_habits()
         stats = Statistics()
@@ -194,9 +197,9 @@ class CLI:
             habit_selected = self.habits_from_db()
             if habit_selected != back:
                 self.show_habit(int(habit_selected))
-                self.show_menu_habit() # Returns to previous menu
-        except: 
-            print(habits_not_found)        
+                self.show_menu_habit()  # Returns to previous menu
+        except:
+            print(habits_not_found)
 
     def update_habit(self):
         """Update an existing habit with the given arguments."""
@@ -251,7 +254,6 @@ class CLI:
             print(f"\n✔ Habit has been successfully updated.\n")
         else:
             print(f"\n🚫 No habit found.\n")
-
 
     def delete_habit(self):
         """Delete an existing habit with the given ID."""
@@ -326,7 +328,7 @@ class CLI:
         except:
             print(f"\n🚫 Habits with the frequency \"{frequency_choice}\" are not currently being tracked\n")
 
-    def tabulate_list(self,habits):
+    def tabulate_list(self, habits):
         """Reusable function to tabulate default list of habits"""
         stats = Statistics()
         stats.calculate(habits)
@@ -346,7 +348,7 @@ class CLI:
             tablify(data, table_header)
         else:
             print("\n🚫 No habits found in the database.\n")
-    
+
     def is_valid_log_date(self, date, frequency, status):
         """Check if the given date is a valid log date based on the habit's frequency and existing logs."""
         if date in status:
@@ -393,7 +395,7 @@ class CLI:
         next_month = date.replace(day=28) + timedelta(days=4)
         month_end = next_month - timedelta(days=next_month.day)
         return month_end
-    
+
     def update_missing_logs(self, status, start_date, end_date):
         """Update missing logs in the status dictionary from the start date to the given end date."""
         current_date = datetime.strptime(start_date, timeformat).date()
@@ -409,8 +411,9 @@ class CLI:
         date_obj = self.date_to_timestamp(date)
         start_date_obj = self.date_to_timestamp(start_date)
         end_date_obj = self.date_to_timestamp(end_date)
-        #return start_date_obj <= date_obj <= end_date_obj
+        # return start_date_obj <= date_obj <= end_date_obj
         return start_date_obj <= date_obj <= end_date_obj
+
     def select_date(self, start_date, end_date):
         """Prompt the user to select a date for marking habit completion."""
         choices = [
@@ -448,12 +451,12 @@ class CLI:
 
     def habits_from_db(self):
         """Display the habit names available in the database for the user to choose from."""
-        try:        
+        try:
             habits = self.db.fetch_all_habits()
 
             if habits:
-                habit_choices = [{ "name": habit["name"], "value": str(habit["id"])} for habit in habits]
-                habit_choices.append({"name":back, "value": back})
+                habit_choices = [{"name": habit["name"], "value": str(habit["id"])} for habit in habits]
+                habit_choices.append({"name": back, "value": back})
                 return questionary.select("Please select a habit:", choices=habit_choices).ask()
             else:
                 raise ValueError("No habit in the database. Add a habit first to use this function.")
@@ -463,13 +466,13 @@ class CLI:
     def show_total_stats(self, stats, long):
         total_streaks = stats.show_total().split("|")
         total_streaks_arr = total_streaks[1].replace("'", "\"")
-        total_streaks_arr2= json.loads(total_streaks_arr)
+        total_streaks_arr2 = json.loads(total_streaks_arr)
         total_streaks_arr2.sort(key=lambda x: x["Streak"], reverse=True)
         if long == 1:
             print("Your longest streak of habit completions is", total_streaks_arr2[0]["Streak"])
             tablify([total_streaks_arr2[0]], "header_keys")
         else:
-            print("\n",total_streaks[0])
+            print("\n", total_streaks[0])
             tablify(total_streaks_arr2, "header_keys")
 
     def show_stats(self):
@@ -478,12 +481,11 @@ class CLI:
         stats = Statistics()
         stats.calculate(habits)
 
-
         options = [
-            {"value":"all","name":"Show all statistics"},
-            {"value":"single_stat","name":"Show only total/average/streak"},
-            {"value":"single_habit","name":"Show single habit statistics"},
-            {"value":back, "name": back},
+            {"value": "all", "name": "Show all statistics"},
+            {"value": "single_stat", "name": "Show only total/average/streak"},
+            {"value": "single_habit", "name": "Show single habit statistics"},
+            {"value": back, "name": back},
         ]
 
         choice = questionary.select("What statistics would you like to see?", choices=options).ask()
@@ -495,80 +497,51 @@ class CLI:
             stats.show_streak()
             back_choice = questionary.select("Would like to go back?", choices=go_back).ask()
             if back_choice == back:
+                self.run()
+            else:
                 self.show_stats()
         elif choice == "single_stat":
-            single_stats = [
-            {"value":"total","name":"Show total"},
-            {"value":"average","name":"Show average"},
-            {"value":"streak","name":"Show streak"},
-            {"value":back, "name": back},
-            ]   
-
-            choice_stats = questionary.select("What statistics would you like to see?", choices=single_stats).ask()
-            # Show total, average, streak
-            if choice_stats == "total":
-                self.show_total_stats(stats,0)
-                self.show_stats()
-            elif choice_stats == "average":
-                print("")
-                stats.show_average()
-                self.show_stats()
-            elif choice_stats == "streak":
-                print("")
-                self.show_total_stats(stats, 1)
-                stats.show_streak()
-                self.show_stats()
-            elif choice_stats == back:
+            # Show only total/average/streak
+            self.show_total_stats(stats, 1)
+            back_choice = questionary.select("Would like to go back?", choices=go_back).ask()
+            if back_choice == back:
+                self.run()
+            else:
                 self.show_stats()
         elif choice == "single_habit":
-            # Select habit
-            habit_choices = [{ "name": habit["name"], "value": str(habit["id"])+":"+habit["name"] } for habit in habits]
-            habit_choices.append({"name":back, "value": back})
-            selected_habit = questionary.select("Select a habit:", choices=habit_choices).ask()
-
-            if selected_habit != back:
-                selected_habit_id = selected_habit.split(":")[0].strip()  # Extract the ID from the selected habit
-                selected_habit_name = selected_habit.split(":")[1]  # Extract the name from the selected habit
-                # Show single habit statistics
-                single_data = stats.show_single(habits, selected_habit_id, selected_habit_name)
-                tablify(single_data,"no_header_right")
+            # Show single habit statistics
+            habit_selected = self.habits_from_db()
+            if habit_selected == back:
+                return
             else:
-                self.show_stats()      
-
+                habit_id = habit_selected
+                habit = self.db.fetch_habit(habit_id)
+                if habit:
+                    habit_stats = stats.show_single_habit_stats(habit)
+                    if habit_stats:
+                        tablify([habit_stats], "header_keys")
+                    else:
+                        print(f"\n🚫 No statistics found for habit with ID {habit_id}.\n")
+                else:
+                    print(f"\n🚫 No habit found with ID {habit_id}.\n")
+            back_choice = questionary.select("Would like to go back?", choices=go_back).ask()
+            if back_choice == back:
+                self.run()
+            else:
+                self.show_stats()
 
     def show_help(self):
-        """Show detailed information about each command and its usage."""
-        print("")
-        print("Here is detailed information about each command and its usage:")
-        print("- create: Create a new habit")
-        print("  Usage: create")
-        print("- list: List all your habits")
-        print("  Usage: list")
-        print("- update: Update an existing habit")
-        print("  Usage: update")
-        print("- delete: Delete an existing habit")
-        print("  Usage: delete")
-        print("- complete: Mark a habit as completed for a given date")
-        print("  Usage: complete")
-        print("- stats: Show various statistics based on your habit data")
-        print("  Usage: stats")
-        print("- help: Show detailed information about each command and its usage")
-        print("  Usage: help")
+        """Display help instructions for using the habit tracking app."""
+        print("\nThis app helps you track your habits and maintain streaks. You can create habits, update their details, mark them as completed, and view various statistics.\n"
+              "\n- To create a new habit, choose the 'Create, update, delete a habit' option and then select 'Create a new habit'."
+              "\n- To update an existing habit, choose the 'Create, update, delete a habit' option and then select 'Update/Edit an existing habit'."
+              "\n- To delete a habit, choose the 'Create, update, delete a habit' option and then select 'Delete an existing habit'."
+              "\n- To mark a habit as completed, choose the 'Check/Complete a task' option and then select 'Check habit as done'."
+              "\n- To view statistics, choose the 'View statistics' option and select the desired statistics to view."
+              "\n- To exit the app, choose the 'Exit' option."
+              "\n\nNote: You can always go back by selecting the appropriate option from the menus."
+              "\n")
 
-        print("- exit: Exit the app")
-        print("")
-    def date_to_timestamp(self, date_string):
-        try:
-            # Convert string to datetime object
-            date_obj = datetime.strptime(str(date_string), "%Y-%m-%d")
-            # Convert date object to datetime object
-            datetime_obj = datetime.combine(date_obj, datetime.min.time())
-            # Convert datetime object to timestamp
-            timestamp = float(datetime_obj.timestamp())
-            
-            return timestamp
-
-        except ValueError:
-            # Handle invalid date format
-            print("Invalid date format. Please provide a date in the format 'YYYY-MM-DD'.")
-            return None
+    def date_to_timestamp(self, date):
+        """Convert the date string to a timestamp for comparison."""
+        return datetime.strptime(date, "%Y-%m-%d").timestamp()

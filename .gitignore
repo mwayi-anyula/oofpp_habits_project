@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyz
+*.pyw
+*.pyi
+*.pyproj
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.vscode/
+
+# IDE
+.idea/
+*.iml
+
+# Logs
+logs/
+*.log
+
+# Miscellaneous
+*.bak
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+
+# Tests
+test.db
