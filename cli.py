@@ -235,9 +235,9 @@ class CLI:
                 habit["end_date"] = end_date
 
             self.db.update_habit(habit_id, habit)
-            print(f"\n✔ Habit with name \"{name}\" has been successfully updated.\n")
+            print(f"\n✔ Habit has been successfully updated.\n")
         else:
-            print(f"\n🚫 No habit found with name \"{name}\".\n")
+            print(f"\n🚫 No habit found.\n")
 
 
     def delete_habit(self):
