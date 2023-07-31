@@ -79,6 +79,20 @@ pytest
 
 The tests are defined in the `test_cli.py` file and cover various scenarios to ensure the proper functionality of the app.
 
+### Predefined Data
+Test data can be found under `test_data.db` or dynamically generate logged data by selecting **`Load predefine data`** under `Show a habit/ list all habits`. See example below:. 
+
+```bash
+? What do you want to do? Show a habit/ list all habits
+? Show a habit/ list all habits: (Use arrow keys)
+   Show single habit
+   List all habits
+   List habits by frequency
+ » Load predefine data
+   << Back
+```
+Predefine data can be dynamically added to the database only if the database is empty.
+
 ## Contributing
 
 Contributions are welcome! If you have any suggestions, bug reports, or feature requests, please open an issue on the [GitHub repository](https://github.com/mwayi-anyula/oofpp_habits_project/issues).

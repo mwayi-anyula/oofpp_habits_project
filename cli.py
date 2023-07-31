@@ -98,19 +98,27 @@ class CLI:
                 elif command_modify == back:
                     self.run()
             elif command == "log":
-                command_log = questionary.select("Check/ Complete habit:", choices=[
-                    {"value": "check_in", "name": "Check habit as done"},
-                    {"value": "clear_log", "name": "Clear check-in / log data"},
-                    {"value": back, "name": back},
-                ]).ask()
-                if command_log == "check_in":
-                    self.check_habit()
-                elif command_log == "clear_log":
-                    self.clear_habit_status()
-                elif command_log == back:
-                    self.run()
+                try:
+                    self.show_stats()
+                except:
+                    print(habits_not_found)
+                else:
+                    command_log = questionary.select("Check/ Complete habit:", choices=[
+                        {"value": "check_in", "name": "Check habit as done"},
+                        {"value": "clear_log", "name": "Clear check-in / log data"},
+                        {"value": back, "name": back},
+                    ]).ask()
+                    if command_log == "check_in":
+                        self.check_habit()
+                    elif command_log == "clear_log":
+                        self.clear_habit_status()
+                    elif command_log == back:
+                        self.run()
             elif command == "stats":
-                self.show_stats()
+                try:
+                    self.show_stats()
+                except:
+                    print(habits_not_found)
             elif command == "help":
                 self.show_help()
             elif command == "exit":
@@ -483,7 +491,7 @@ class CLI:
 
         options = [
             {"value": "all", "name": "Show all statistics"},
-            {"value": "single_stat", "name": "Show only total/average/streak"},
+            {"value": "single_stat", "name": "Show longest streak"},
             {"value": "single_habit", "name": "Show single habit statistics"},
             {"value": back, "name": back},
         ]
@@ -501,7 +509,7 @@ class CLI:
             else:
                 self.show_stats()
         elif choice == "single_stat":
-            # Show only total/average/streak
+            # Show longest streak
             self.show_total_stats(stats, 1)
             back_choice = questionary.select("Would like to go back?", choices=go_back).ask()
             if back_choice == back:
